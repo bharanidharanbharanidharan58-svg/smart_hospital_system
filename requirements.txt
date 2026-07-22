@@ -1,0 +1,7 @@
+Flask
+gunicorn
+Flask
+gunicorn
+pandas
+openpyxl
+requests
