@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraCare | Smart AI Hospital Appointment System</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="brand" onclick="navigateTo('home')">
+                <div class="brand-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <span class="brand-title">Aura<span class="highlight">Care</span></span>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="javascript:void(0)" onclick="navigateTo('home')" class="nav-link active" data-i18n="navHome">Home</a>
+                <a href="javascript:void(0)" onclick="navigateTo('hospitals-view')" class="nav-link" data-i18n="navHospitals">Hospitals</a>
+                <a href="javascript:void(0)" onclick="navigateTo('doctors-view')" class="nav-link" data-i18n="navDoctors">Doctors</a>
+                <a href="javascript:void(0)" onclick="navigateTo('patient-portal')" class="nav-link patient-only hidden" data-i18n="navPatientPortal">Patient Portal</a>
+                <a href="javascript:void(0)" onclick="navigateTo('doctor-portal')" class="nav-link doctor-only hidden" data-i18n="navDoctorPortal">Doctor Portal</a>
+                <a href="javascript:void(0)" onclick="navigateTo('admin-portal')" class="nav-link admin-only hidden" data-i18n="navAdminPortal">Admin Dashboard</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn" id="lang-toggle" onclick="toggleLanguage()" title="Toggle Language">
+                    <i class="fa-solid fa-language"></i> <span id="current-lang">EN</span>
+                </button>
+                <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="btn btn-outline" onclick="openLoginModal()"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                    <button class="btn btn-primary" onclick="openRegisterModal()"><i class="fa-solid fa-user-plus"></i> Register</button>
+                </div>
+
+                <div class="user-profile hidden" id="user-profile">
+                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <span class="user-name" id="user-display-name">User</span>
+                    <button class="btn btn-sm btn-danger" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- HOME VIEW -->
+        <section id="home" class="view active">
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <span class="badge badge-accent"><i class="fa-solid fa-sparkles"></i> Next-Gen Healthcare Platform</span>
+                    <h1 data-i18n="heroTitle">Smart Hospital Appointments & AI Healthcare Queue</h1>
+                    <p data-i18n="heroDesc">Instant appointment scheduling with queue estimation, double-booking prevention, and real-time doctor availability updates.</p>
+                    
+                    <div class="search-bar-container">
+                        <div class="search-input-group">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="global-search" placeholder="Search doctor, hospital, symptom..." oninput="handleSearchInput()">
+                            <button class="voice-search-btn" onclick="startVoiceSearch()" title="Voice Search">
+                                <i class="fa-solid fa-microphone" id="mic-icon"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary btn-search" onclick="triggerSearch()"><i class="fa-solid fa-paper-plane"></i> Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>Featured Partner Hospitals</h2>
+                    <p>Find top-rated multi-specialty hospitals near you</p>
+                </div>
+                <div class="grid grid-4" id="home-hospitals-grid"></div>
+            </div>
+        </section>
+
+        <!-- HOSPITALS VIEW -->
+        <section id="hospitals-view" class="view">
+            <div class="section-container">
+                <h2>Explore Hospitals</h2>
+                <div class="grid grid-3" id="all-hospitals-grid"></div>
+            </div>
+        </section>
+
+        <!-- DOCTORS VIEW -->
+        <section id="doctors-view" class="view">
+            <div class="section-container">
+                <h2>Our Specialist Doctors</h2>
+                <div class="grid grid-3" id="all-doctors-grid"></div>
+            </div>
+        </section>
+
+        <!-- PATIENT PORTAL -->
+        <section id="patient-portal" class="view">
+            <div class="section-container">
+                <h2>Patient Dashboard</h2>
+                <div class="portal-grid">
+                    <div class="card p-4">
+                        <h3>Book New Appointment</h3>
+                        <form id="booking-form" onsubmit="handleBookAppointment(event)">
+                            <div class="form-group">
+                                <label>Hospital</label>
+                                <select id="booking-hospital" class="form-control" onchange="loadDepartmentsForBooking()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Department</label>
+                                <select id="booking-dept" class="form-control" onchange="loadDoctorsForBooking()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Doctor</label>
+                                <select id="booking-doctor" class="form-control" onchange="loadDoctorSlots()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="booking-date" class="form-control" onchange="loadDoctorSlots()">
+                            </div>
+                            <div class="form-group">
+                                <label>Available Slots (AI Recommended)</label>
+                                <div class="slots-grid" id="slots-container"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Confirm Booking</button>
+                        </form>
+                    </div>
+
+                    <div class="card p-4">
+                        <h3>My Appointments</h3>
+                        <div id="patient-appointments-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOCTOR PORTAL -->
+        <section id="doctor-portal" class="view">
+            <div class="section-container">
+                <h2>Doctor Consultation Queue</h2>
+                <div id="doctor-queue-list"></div>
+            </div>
+        </section>
+
+        <!-- ADMIN PORTAL -->
+        <section id="admin-portal" class="view">
+            <div class="section-container">
+                <h2>Hospital System Analytics</h2>
+                <div class="analytics-charts">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FLOATING CHATBOT WIDGET -->
+    <div class="floating-chat-toggle" onclick="toggleChatbot()">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <div class="chatbot-drawer hidden" id="chatbot-drawer">
+        <div class="chat-header">
+            <span>🤖 AI Health Assistant</span>
+            <button onclick="toggleChatbot()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-body" id="chat-messages"></div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Type symptoms..." onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- AUTH MODALS -->
+    <div class="modal hidden" id="login-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('login-modal')">&times;</span>
+            <h2>Sign In</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="login-role" class="form-control">
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="admin">System Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
