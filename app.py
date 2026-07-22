@@ -17,13 +17,14 @@ from ai_engine import (
 )
 from notification_manager import send_appointment_notifications, update_notifications_config, get_notifications_config
 
+import tempfile
+
 app = Flask(__name__)
 app.secret_key = 'smart_hospital_super_secret_key_for_session_management'
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+UPLOAD_FOLDER = tempfile.gettempdir()
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 listeners = []
 
